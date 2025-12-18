@@ -1,0 +1,160 @@
+{
+  "name": "Simple 6-Client Problem (Will Work!)",
+  "clients": [
+    {
+      "id": 1,
+      "name": "Client 1",
+      "x": 65.63931673988398,
+      "y": 27.59032478468905,
+      "meeting_duration": 30,
+      "priority": "Medium",
+      "time_window_start": null,
+      "time_window_end": null,
+      "required_skills": []
+    },
+    {
+      "id": 2,
+      "name": "Client 2",
+      "x": 72.32999035704438,
+      "y": 49.536178298449954,
+      "meeting_duration": 30,
+      "priority": "Medium",
+      "time_window_start": null,
+      "time_window_end": null,
+      "required_skills": []
+    },
+    {
+      "id": 3,
+      "name": "Client 3",
+      "x": 67.2728990264356,
+      "y": 63.69184304880895,
+      "meeting_duration": 45,
+      "priority": "Medium",
+      "time_window_start": null,
+      "time_window_end": null,
+      "required_skills": []
+    },
+    {
+      "id": 4,
+      "name": "Client 4",
+      "x": 39.4452700750861,
+      "y": 37.46058338287053,
+      "meeting_duration": 30,
+      "priority": "Medium",
+      "time_window_start": null,
+      "time_window_end": null,
+      "required_skills": []
+    },
+    {
+      "id": 5,
+      "name": "Client 5",
+      "x": 69.90169230597701,
+      "y": 57.50331275192196,
+      "meeting_duration": 45,
+      "priority": "Medium",
+      "time_window_start": null,
+      "time_window_end": null,
+      "required_skills": []
+    },
+    {
+      "id": 6,
+      "name": "Client 6",
+      "x": 73.02651546963239,
+      "y": 32.89403976488022,
+      "meeting_duration": 30,
+      "priority": "Medium",
+      "time_window_start": null,
+      "time_window_end": null,
+      "required_skills": []
+    }
+  ],
+  "vehicles": [
+    {
+      "id": 0,
+      "name": "Sales Rep 1",
+      "capacity": 600,
+      "start_x": 0.0,
+      "start_y": 0.0,
+      "end_x": 0.0,
+      "end_y": 0.0,
+      "skills": [],
+      "cost_per_km": 0.5
+    },
+    {
+      "id": 1,
+      "name": "Sales Rep 2",
+      "capacity": 600,
+      "start_x": 0.0,
+      "start_y": 0.0,
+      "end_x": 0.0,
+      "end_y": 0.0,
+      "skills": [],
+      "cost_per_km": 0.5
+    }
+  ],
+  "travel_matrix": [
+    [
+      0.0,
+      40.99,
+      33.5,
+      33.06,
+      24.59,
+      31.9,
+      43.03
+    ],
+    [
+      40.99,
+      0.0,
+      34.41,
+      54.21,
+      41.99,
+      45.32,
+      13.64
+    ],
+    [
+      33.5,
+      34.41,
+      0.0,
+      22.55,
+      52.55,
+      12.49,
+      24.99
+    ],
+    [
+      33.06,
+      54.21,
+      22.55,
+      0.0,
+      57.36,
+      10.09,
+      47.0
+    ],
+    [
+      24.59,
+      41.99,
+      52.55,
+      57.36,
+      0.0,
+      54.69,
+      50.84
+    ],
+    [
+      31.9,
+      45.32,
+      12.49,
+      10.09,
+      54.69,
+      0.0,
+      37.21
+    ],
+    [
+      43.03,
+      13.64,
+      24.99,
+      47.0,
+      50.84,
+      37.21,
+      0.0
+    ]
+  ]
+}
