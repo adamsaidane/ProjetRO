@@ -1,0 +1,618 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+
+% Configuration des listings Python
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{red},
+    showstringspaces=false,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny\color{gray}
+}
+
+\title{
+    \includegraphics[width=0.3\textwidth]{logo_insat.png}\\[1cm]
+    \textbf{Projet de Recherche Opérationnelle}\\
+    \large Ordonnancement Multi-Période:\\
+    Gestion des Stocks de Carburant pour Centrales Électriques
+}
+
+\author{
+    \textbf{Groupe X}\\[0.5cm]
+    Étudiant 1 - \texttt{email1@insat.rnu.tn}\\
+    Étudiant 2 - \texttt{email2@insat.rnu.tn}\\
+    Étudiant 3 - \texttt{email3@insat.rnu.tn}\\
+    Étudiant 4 - \texttt{email4@insat.rnu.tn}\\
+    Étudiant 5 - \texttt{email5@insat.rnu.tn}\\[0.5cm]
+    \textit{Institut National des Sciences Appliquées et de Technologie}\\
+    \textit{Département: [Votre Département]}\\
+    \textit{Année Universitaire: 2024-2025}
+}
+
+\date{Décembre 2025}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Présentation des Membres du Groupe}
+
+\subsection{Étudiant 1}
+\begin{itemize}
+    \item \textbf{Nom:} [Nom Prénom]
+    \item \textbf{Email:} [email@insat.rnu.tn]
+    \item \textbf{Rôle:} Modélisation mathématique et optimisation
+\end{itemize}
+\begin{center}
+\includegraphics[width=0.15\textwidth]{photo1.jpg}
+\end{center}
+
+\subsection{Étudiant 2}
+\begin{itemize}
+    \item \textbf{Nom:} [Nom Prénom]
+    \item \textbf{Email:} [email@insat.rnu.tn]
+    \item \textbf{Rôle:} Développement de l'interface graphique
+\end{itemize}
+\begin{center}
+\includegraphics[width=0.15\textwidth]{photo2.jpg}
+\end{center}
+
+% Répéter pour les autres membres...
+
+\newpage
+
+\section{Introduction}
+
+\subsection{Contexte}
+
+La gestion optimale des stocks de carburant pour les centrales électriques représente un défi majeur dans le secteur énergétique. Les centrales doivent assurer une production continue d'électricité tout en minimisant les coûts d'approvisionnement, de stockage et en évitant les ruptures de stock qui pourraient compromettre la production.
+
+Ce projet vise à développer un outil d'aide à la décision basé sur la programmation linéaire mixte (PLM) pour optimiser l'ordonnancement multi-période de l'approvisionnement en carburant.
+
+\subsection{Problématique}
+
+Une entreprise de gestion énergétique doit planifier ses achats de carburant sur plusieurs périodes (mois ou trimestres) pour alimenter plusieurs centrales électriques. L'entreprise doit:
+
+\begin{itemize}
+    \item Décider des quantités à acheter à chaque période auprès de différents fournisseurs
+    \item Gérer les niveaux de stock dans ses entrepôts
+    \item Satisfaire les demandes variables des centrales
+    \item Minimiser les coûts totaux incluant:
+    \begin{itemize}
+        \item Coûts d'achat (variables selon la période et le fournisseur)
+        \item Coûts fixes de commande
+        \item Coûts de stockage
+        \item Coûts de pénurie en cas de rupture
+    \end{itemize}
+\end{itemize}
+
+\subsection{Objectifs du Projet}
+
+Les objectifs de ce projet sont:
+
+\begin{enumerate}
+    \item Modéliser mathématiquement le problème d'ordonnancement multi-période
+    \item Développer une interface graphique intuitive pour la saisie des données
+    \item Implémenter la résolution via le solveur Gurobi
+    \item Visualiser et interpréter les résultats
+    \item Analyser différents scénarios d'approvisionnement
+\end{enumerate}
+
+\newpage
+
+\section{Modélisation Mathématique}
+
+\subsection{Notations et Paramètres}
+
+\subsubsection{Indices}
+\begin{itemize}
+    \item $t \in \{0, 1, ..., T-1\}$ : Indices des périodes
+    \item $s \in \{0, 1, ..., S-1\}$ : Indices des fournisseurs
+    \item $c \in \{0, 1, ..., C-1\}$ : Indices des centrales
+\end{itemize}
+
+\subsubsection{Paramètres}
+\begin{itemize}
+    \item $p_{t,s}$ : Prix d'achat par tonne du fournisseur $s$ à la période $t$ (€/tonne)
+    \item $f_s$ : Coût fixe de commande auprès du fournisseur $s$ (€)
+    \item $h_t$ : Coût de stockage par tonne à la période $t$ (€/tonne)
+    \item $d_{t,c}$ : Demande de la centrale $c$ à la période $t$ (tonnes)
+    \item $\kappa_{t,s}$ : Capacité du fournisseur $s$ à la période $t$ (tonnes)
+    \item $K$ : Capacité maximale de stockage (tonnes)
+    \item $S_0$ : Stock initial (tonnes)
+    \item $S_{min}$ : Stock final minimum requis (tonnes)
+    \item $r$ : Taux d'actualisation
+    \item $\pi$ : Coût de pénurie par tonne (€/tonne)
+    \item $q_{min}$ : Quantité minimale de commande (tonnes)
+\end{itemize}
+
+\subsection{Variables de Décision}
+
+\subsubsection{Variables Continues}
+\begin{itemize}
+    \item $x_{t,s} \in \mathbb{R}^+$ : Quantité achetée au fournisseur $s$ à la période $t$
+    \item $y_t \in [0, K]$ : Stock à la fin de la période $t$
+    \item $z_{t,c} \in \mathbb{R}^+$ : Quantité consommée par la centrale $c$ à la période $t$
+    \item $p_{t,c} \in \mathbb{R}^+$ : Pénurie à la centrale $c$ à la période $t$
+\end{itemize}
+
+\subsubsection{Variables Binaires}
+\begin{itemize}
+    \item $w_{t,s} \in \{0, 1\}$ : Vaut 1 si commande au fournisseur $s$ à la période $t$, 0 sinon
+\end{itemize}
+
+\subsection{Fonction Objectif}
+
+Minimiser le coût total actualisé sur l'horizon de planification:
+
+\begin{equation}
+\min Z = \sum_{t=0}^{T-1} \frac{1}{(1+r)^t} \left[ \sum_{s=0}^{S-1} (p_{t,s} \cdot x_{t,s} + f_s \cdot w_{t,s}) + h_t \cdot y_t + \pi \sum_{c=0}^{C-1} p_{t,c} \right]
+\end{equation}
+
+\subsection{Contraintes}
+
+\subsubsection{Conservation des Stocks}
+
+Pour la première période ($t=0$):
+\begin{equation}
+S_0 + \sum_{s=0}^{S-1} x_{0,s} - \sum_{c=0}^{C-1} z_{0,c} = y_0
+\end{equation}
+
+Pour les périodes suivantes ($t > 0$):
+\begin{equation}
+y_{t-1} + \sum_{s=0}^{S-1} x_{t,s} - \sum_{c=0}^{C-1} z_{t,c} = y_t \quad \forall t \in \{1, ..., T-1\}
+\end{equation}
+
+\subsubsection{Satisfaction de la Demande}
+
+\begin{equation}
+z_{t,c} + p_{t,c} \geq d_{t,c} \quad \forall t, c
+\end{equation}
+
+Cette contrainte permet d'avoir des pénuries ($p_{t,c} > 0$) si nécessaire.
+
+\subsubsection{Capacité des Fournisseurs}
+
+\begin{equation}
+x_{t,s} \leq \kappa_{t,s} \quad \forall t, s
+\end{equation}
+
+\subsubsection{Capacité de Stockage}
+
+\begin{equation}
+y_t \leq K \quad \forall t
+\end{equation}
+
+\subsubsection{Lien Variable Binaire-Continue (Big M)}
+
+\begin{equation}
+x_{t,s} \leq M \cdot w_{t,s} \quad \forall t, s
+\end{equation}
+
+où $M$ est un nombre suffisamment grand (Big M).
+
+\subsubsection{Quantité Minimale de Commande}
+
+\begin{equation}
+x_{t,s} \geq q_{min} \cdot w_{t,s} \quad \forall t, s
+\end{equation}
+
+\subsubsection{Stock Final Minimum}
+
+\begin{equation}
+y_{T-1} \geq S_{min}
+\end{equation}
+
+\subsubsection{Non-Négativité}
+
+\begin{equation}
+x_{t,s}, y_t, z_{t,c}, p_{t,c} \geq 0 \quad \forall t, s, c
+\end{equation}
+
+\subsection{Classification du Problème}
+
+Ce problème est un problème de \textbf{Programmation Linéaire Mixte (PLM)} car:
+\begin{itemize}
+    \item Il contient des variables continues ($x, y, z, p$)
+    \item Il contient des variables binaires ($w$)
+    \item La fonction objectif est linéaire
+    \item Toutes les contraintes sont linéaires
+\end{itemize}
+
+La présence de variables binaires rend le problème NP-difficile, mais les solveurs modernes comme Gurobi peuvent résoudre efficacement des instances de taille moyenne.
+
+\newpage
+
+\section{Architecture de l'Application}
+
+\subsection{Technologies Utilisées}
+
+\begin{itemize}
+    \item \textbf{Langage:} Python 3.8+
+    \item \textbf{Framework GUI:} PySide6 (PyQt6)
+    \item \textbf{Solveur:} Gurobi Optimizer 11.0
+    \item \textbf{Visualisation:} Matplotlib
+    \item \textbf{Calcul numérique:} NumPy, Pandas
+\end{itemize}
+
+\subsection{Structure du Code}
+
+L'application est organisée en modules:
+
+\begin{itemize}
+    \item \texttt{main.py}: Point d'entrée de l'application
+    \item \texttt{model.py}: Classe \texttt{FuelManagementModel} pour la modélisation et résolution
+    \item \texttt{interface.py}: Classe \texttt{MainWindow} pour l'interface utilisateur
+    \item \texttt{worker.py}: Classe \texttt{OptimizationWorker} pour le multithreading
+\end{itemize}
+
+\subsection{Interface Homme-Machine}
+
+L'IHM est organisée en onglets pour une navigation intuitive:
+
+\subsubsection{Onglet 1: Paramètres Généraux}
+\begin{itemize}
+    \item Configuration du nombre de périodes, fournisseurs, centrales
+    \item Paramètres de stock et coûts globaux
+    \item Taux d'actualisation
+\end{itemize}
+
+\subsubsection{Onglet 2: Prix et Coûts}
+\begin{itemize}
+    \item Matrice des prix d'achat (période × fournisseur)
+    \item Coûts fixes par fournisseur
+    \item Coûts de stockage par période
+\end{itemize}
+
+\subsubsection{Onglet 3: Demandes et Capacités}
+\begin{itemize}
+    \item Matrice des demandes (période × centrale)
+    \item Matrice des capacités (période × fournisseur)
+\end{itemize}
+
+\subsubsection{Onglet 4: Résultats}
+\begin{itemize}
+    \item Affichage textuel des résultats
+    \item Visualisations graphiques
+\end{itemize}
+
+\subsection{Multithreading}
+
+Pour garantir la réactivité de l'interface pendant les calculs:
+\begin{itemize}
+    \item Utilisation de \texttt{QThread} pour exécuter l'optimisation
+    \item Communication via signaux Qt
+    \item Barre de progression pendant le calcul
+\end{itemize}
+
+\newpage
+
+\section{Implémentation}
+
+\subsection{Modélisation avec Gurobi}
+
+Extrait de code pour la construction du modèle:
+
+\begin{lstlisting}
+# Creation du modele
+self.model = gp.Model("GestionCarburantCentrales")
+
+# Variables de decision
+self.x = self.model.addVars(T, S, lb=0, name="Achat")
+self.y = self.model.addVars(T, lb=0, ub=capacite_stock, name="Stock")
+self.z = self.model.addVars(T, C, lb=0, name="Consommation")
+self.w = self.model.addVars(T, S, vtype=GRB.BINARY, name="CommandeFournisseur")
+self.p = self.model.addVars(T, C, lb=0, name="Penurie")
+
+# Fonction objectif
+cout_total = gp.QuadExpr()
+for t in range(T):
+    facteur_actualisation = 1 / ((1 + taux_actualisation) ** t)
+    # Couts d'achat et fixes
+    for s in range(S):
+        cout_total += facteur_actualisation * prix_achat[t,s] * self.x[t,s]
+        cout_total += facteur_actualisation * cout_fixe[s] * self.w[t,s]
+    # Cout de stockage
+    cout_total += facteur_actualisation * cout_stock[t] * self.y[t]
+    # Cout de penurie
+    for c in range(C):
+        cout_total += facteur_actualisation * cout_penurie * self.p[t,c]
+
+self.model.setObjective(cout_total, GRB.MINIMIZE)
+\end{lstlisting}
+
+\subsection{Interface Graphique}
+
+L'interface utilise des composants Qt:
+\begin{itemize}
+    \item \texttt{QTableWidget} pour les matrices de données
+    \item \texttt{QSpinBox} et \texttt{QDoubleSpinBox} pour les paramètres
+    \item \texttt{QTabWidget} pour l'organisation en onglets
+    \item \texttt{QProgressBar} pour le feedback utilisateur
+    \item Integration de Matplotlib via \texttt{FigureCanvas}
+\end{itemize}
+
+\newpage
+
+\section{Résultats et Analyse}
+
+\subsection{Scénario de Test Principal}
+
+\subsubsection{Paramètres}
+\begin{itemize}
+    \item \textbf{Horizon:} 12 périodes (1 an mensuel)
+    \item \textbf{Fournisseurs:} 3
+    \item \textbf{Centrales:} 4
+    \item \textbf{Capacité de stockage:} 50,000 tonnes
+    \item \textbf{Stock initial:} 20,000 tonnes
+    \item \textbf{Stock final minimum:} 15,000 tonnes
+    \item \textbf{Taux d'actualisation:} 5\%
+\end{itemize}
+
+\subsubsection{Résultats Obtenus}
+
+\begin{table}[H]
+\centering
+\caption{Résultats de l'optimisation}
+\begin{tabular}{|l|r|}
+\hline
+\textbf{Indicateur} & \textbf{Valeur} \\
+\hline
+Coût total optimal & XXX,XXX.XX € \\
+Coût d'achat & XXX,XXX.XX € \\
+Coût de stockage & XX,XXX.XX € \\
+Coût fixe & XX,XXX.XX € \\
+Coût de pénurie & X,XXX.XX € \\
+Temps de résolution & X.XX secondes \\
+Gap d'optimalité & 0.00\% \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Visualisations}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{graph_stock.png}
+\caption{Évolution du stock sur l'horizon de planification}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{graph_achats.png}
+\caption{Achats par fournisseur et par période}
+\end{figure}
+
+\subsection{Interprétation}
+
+\subsubsection{Stratégie d'Approvisionnement}
+L'analyse des résultats montre que:
+\begin{itemize}
+    \item Le modèle privilégie les achats en début d'horizon pour bénéficier de prix plus avantageux
+    \item L'actualisation financière incite à retarder certains coûts
+    \item Les fournisseurs les moins chers sont sollicités en priorité
+    \item Le stock est maintenu au-dessus du minimum requis
+\end{itemize}
+
+\subsubsection{Gestion du Stock}
+\begin{itemize}
+    \item Le niveau de stock fluctue selon les variations saisonnières de la demande
+    \item Les contraintes de capacité ne sont jamais violées
+    \item Le stock final respecte la contrainte minimale
+\end{itemize}
+
+\subsection{Analyse de Sensibilité}
+
+\subsubsection{Impact du Taux d'Actualisation}
+
+\begin{table}[H]
+\centering
+\caption{Sensibilité au taux d'actualisation}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Taux} & \textbf{Coût Total} & \textbf{Variation} \\
+\hline
+0\% & XXX,XXX € & - \\
+3\% & XXX,XXX € & +X.X\% \\
+5\% & XXX,XXX € & +X.X\% \\
+10\% & XXX,XXX € & +X.X\% \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Impact de la Capacité de Stockage}
+
+Un stockage plus important permet de profiter des opportunités d'achat à bas prix, mais engendre des coûts de stockage supplémentaires.
+
+\newpage
+
+\section{Tests et Validation}
+
+\subsection{Cas de Test}
+
+Plusieurs scénarios ont été testés:
+
+\subsubsection{Test 1: Capacités Serrées}
+\begin{itemize}
+    \item Capacité de stockage réduite à 30,000 tonnes
+    \item Observation: Augmentation des pénuries et du coût total
+\end{itemize}
+
+\subsubsection{Test 2: Demande Élevée}
+\begin{itemize}
+    \item Augmentation de 30\% de la demande
+    \item Observation: Utilisation maximale des capacités des fournisseurs
+\end{itemize}
+
+\subsubsection{Test 3: Variations de Prix Importantes}
+\begin{itemize}
+    \item Fluctuations de ±40\% sur les prix
+    \item Observation: Stratégie d'achat anticipé plus marquée
+\end{itemize}
+
+\subsection{Validation}
+
+La validation a été effectuée par:
+\begin{itemize}
+    \item Vérification manuelle sur des cas simples (2-3 périodes)
+    \item Comparaison avec une solution gloutonne (heuristique)
+    \item Vérification de la cohérence des contraintes
+    \item Test de non-régression
+\end{itemize}
+
+\newpage
+
+\section{Conclusion}
+
+\subsection{Bilan}
+
+Ce projet a permis de:
+\begin{enumerate}
+    \item Modéliser un problème réel d'ordonnancement multi-période
+    \item Implémenter une solution complète avec interface graphique
+    \item Maîtriser l'utilisation du solveur Gurobi
+    \item Développer une application robuste et utilisable
+\end{enumerate}
+
+\subsection{Complexité du Modèle}
+
+Notre modèle atteint un haut niveau de complexité:
+\begin{itemize}
+    \item \textbf{Variables mixtes:} Continue + binaires (PLNE/PLM)
+    \item \textbf{Multi-dimension:} Temps × Fournisseurs × Centrales
+    \item \textbf{Contraintes réalistes:} Conservation, capacités, commandes minimales
+    \item \textbf{Actualisation financière:} Prise en compte de la valeur temporelle
+    \item \textbf{Gestion de l'incertitude:} Variables de pénurie
+\end{itemize}
+
+\subsection{Difficultés Rencontrées}
+
+\begin{itemize}
+    \item Configuration de la licence Gurobi
+    \item Gestion du multithreading pour l'interface
+    \item Choix du paramètre Big M
+    \item Validation des résultats sur des cas complexes
+\end{itemize}
+
+\subsection{Extensions Possibles}
+
+Plusieurs améliorations sont envisageables:
+
+\begin{enumerate}
+    \item \textbf{Incertitude:} Programmation stochastique avec scénarios
+    \item \textbf{Robustesse:} Contraintes de robustesse sur les prix
+    \item \textbf{Multi-objectifs:} Optimisation de plusieurs critères
+    \item \textbf{Contraintes supplémentaires:}
+    \begin{itemize}
+        \item Fenêtres de livraison
+        \item Modes de transport multiples
+        \item Contrats à long terme
+        \item Qualités de carburant différentes
+    \end{itemize}
+    \item \textbf{Interface:}
+    \begin{itemize}
+        \item Export vers Excel/PDF
+        \item Import de données CSV
+        \item Dashboard web
+        \item Analyse de sensibilité automatique
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Apports Personnels}
+
+Ce projet nous a permis de:
+\begin{itemize}
+    \item Approfondir nos connaissances en recherche opérationnelle
+    \item Développer des compétences en développement logiciel
+    \item Apprendre à travailler en équipe sur un projet complexe
+    \item Comprendre les enjeux de la gestion énergétique
+\end{itemize}
+
+\newpage
+
+\section{Références}
+
+\begin{enumerate}
+    \item Gurobi Optimization, LLC. \textit{Gurobi Optimizer Reference Manual}, 2024. \\
+    \texttt{https://www.gurobi.com/documentation/}
+    
+    \item Qt Company. \textit{Qt for Python Documentation}, 2024. \\
+    \texttt{https://doc.qt.io/qtforpython/}
+    
+    \item Williams, H.P. \textit{Model Building in Mathematical Programming}, 5th Edition, Wiley, 2013.
+    
+    \item Hillier, F.S., Lieberman, G.J. \textit{Introduction to Operations Research}, 10th Edition, McGraw-Hill, 2015.
+    
+    \item Cours de Recherche Opérationnelle, Prof. I. AJILI, INSAT, 2024-2025.
+\end{enumerate}
+
+\newpage
+
+\appendix
+
+\section{Code Source Principal}
+
+\subsection{Extrait: Fonction Objectif}
+
+\begin{lstlisting}
+# Fonction objectif: Minimiser les couts totaux actualises
+cout_total = gp.QuadExpr()
+
+for t in range(T):
+    facteur_actualisation = 1 / ((1 + taux_actualisation) ** t)
+    
+    # Couts d'achat
+    for s in range(S):
+        cout_total += facteur_actualisation * prix_achat[t,s] * self.x[t,s]
+        # Cout fixe si commande
+        cout_total += facteur_actualisation * cout_fixe[s] * self.w[t,s]
+    
+    # Couts de stockage
+    cout_total += facteur_actualisation * cout_stock[t] * self.y[t]
+    
+    # Couts de penurie
+    for c in range(C):
+        cout_total += facteur_actualisation * cout_penurie * self.p[t,c]
+
+self.model.setObjective(cout_total, GRB.MINIMIZE)
+\end{lstlisting}
+
+\section{Captures d'Écran}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{screenshot_params.png}
+\caption{Interface - Onglet Paramètres}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{screenshot_results.png}
+\caption{Interface - Onglet Résultats}
+\end{figure}
+
+\end{document}
