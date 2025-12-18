@@ -140,7 +140,6 @@ class UnifiedLauncher(QMainWindow):
 
     def define_projects(self):
         """Définit tous les projets"""
-        # À ADAPTER selon vos projets réels
         return [
             {
                 'name': 'Allocation de Processus',
@@ -164,7 +163,7 @@ class UnifiedLauncher(QMainWindow):
                 'color': '#f39c12',
                 'hover_color': '#d68910',
                 'pressed_color': '#b9770e',
-                'path': './projet4',
+                'path': './projet2',
                 'file': 'main.py'
             },
             {
@@ -177,7 +176,7 @@ class UnifiedLauncher(QMainWindow):
                 'color': '#2ecc71',
                 'hover_color': '#27ae60',
                 'pressed_color': '#1e8449',
-                'path': './projet2',
+                'path': './projet3',
                 'file': 'main.py'
             },
             {
@@ -190,7 +189,7 @@ class UnifiedLauncher(QMainWindow):
                 'color': '#e74c3c',
                 'hover_color': '#c0392b',
                 'pressed_color': '#a93226',
-                'path': './projet3',
+                'path': './projet4',
                 'file': 'main.py'
             },
             {
